@@ -18,8 +18,8 @@
 
 "roleId": "VERIFIED ROL / STUDENT",
   "email": {
-    "user": "eloictdiscord@gmail.com", //email verificatiecodes
-    "pass": "yluq kkdb lfur ggjm" //passkeys van deze email
+    "user": "xxxxxxxxxxxxxxxxx", //email verificatiecodes
+    "pass": "xxxx xxxx xxxx xxxx" //passkeys van deze email
   }, 
 
 
