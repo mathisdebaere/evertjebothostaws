@@ -46,7 +46,7 @@ module.exports = {
         const existingMessageId = existingMessage.id;
         console.log(
           chalk.red('+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n') +
-          chalk.green(`Er bestaat al een interface voor de tickets: ${existingMessageId}\n`) +
+          chalk.green(`Er bestaat al een interface voor tickets, we hergebruiken deze.\n`) +
           chalk.red('+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+')
         );
         
