@@ -1,23 +1,38 @@
 {
-  "clientId": "xxx",
-  "token": "xxxx",
+  "clientId": "1291428158876418068",
+  "token": "MTI5MTQyODE1ODg3NjQxODA2OA.G93TnJ.HAvNBW6luCCzPtRmE6S3uDjHBAGsMaVnIJEKBo",
 
-  "parentOpened": "xxxxx",
+  "parentOpened": "1290324526533443625",
   "Category1": "Vragen / Opmerkingen",
   "Category2": "Suggesties",
   "Category3": "Andere",
 
-  "guildId": "xxxxxxxxxx",
+  "guildId": "757544128098861076",
   
+  "welcomeChannel":"1290295707408011307",
 
-  "roleSupport": "xxxxxxxx",
+  "roleSupport": "1290304164844404797",
 
-  "roleId": "xx",
+  "verifyChannel": "1293551793392980038",
+
+
+  "graduateRole": "1293568921454120980",
+
+  "roleChannel": "1290295963461881948",  
+
+
+  "joinToCreateChannelId2":"1293550783756767323",
+  "joinToCreateChannelId3":"1293550808574726226",
+  "joinToCreateChannelId4":"1293550858440671232",
+  "joinToCreateChannelIdUnlimited":"1293550914480640100",
+  
+  
+  "roleId": "1292905546189504585",
   "email": {
-    "user": "xxxxxxxxxx",
-    "pass": "xxxxxxxxxx"
+    "user": "eloictdiscord@gmail.com",
+    "pass": "rfis mqes mwql vlax"
   },
   
-  "logsTicket": "xxxxxxxxxx",
-  "ticketChannel": "xxxxxxxxxxx"
+  "logsTicket": "1290305587586011150",
+  "ticketChannel": "1290295977403617341"
 }
