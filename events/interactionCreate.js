@@ -1,8 +1,8 @@
 const chalk = require('chalk');
 const { getPasteUrl, PrivateBinClient } = require('@agc93/privatebin');
-const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton, Modal, TextInputComponent } = require('discord.js');
+const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton, Modal, TextInputComponent, MessageSelectMenu } = require('discord.js');
 const nodemailer = require('nodemailer');
-const { token, clientId, guildId, roleId, email } = require('../config.json');
+const { token, clientId, guildId, roleId, email, welcomeChannel, joinToCreateChannelId2, joinToCreateChannelId3, joinToCreateChannelId4, joinToCreateChannelIdUnlimited, verifyChannel, graduateRole, roleChannel } = require('../config.json');
 const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
@@ -68,7 +68,7 @@ module.exports = {
         const row = new client.discord.MessageActionRow()
           .addComponents(
             new client.discord.MessageSelectMenu()
-              .setCustomId('category')
+              .setCustomId('ticketcategory')
               .setPlaceholder('Selecteer een categorie')
               .addOptions([{
                   label: client.config.Category1,
@@ -290,11 +290,6 @@ module.exports = {
 
  client.on('voiceStateUpdate', async (oldState, newState) => {
     // The IDs of the 'Join to make a room' channels with different user limits
-    const joinToCreateChannelId2 = '1293550783756767323'; // Room with 2 user limit
-  const joinToCreateChannelId3 = '1293550808574726226'; // Room with 3 user limit
-  const joinToCreateChannelId4 = '1293550858440671232'; // Room with 4 user limit
-  const joinToCreateChannelIdUnlimited = '1293550914480640100'; // Room with no user limit
-  
     const user = newState.member.user;
     const guild = newState.guild;
     let userLimit = 0; // Default is 0 (no limit)
@@ -327,7 +322,7 @@ module.exports = {
           deny: ['VIEW_CHANNEL'],
         },
 		  {
-          id: '1293549211433832511', // Deny access for everyone else initially
+          id: roleId, // Deny access for everyone else initially
           allow: ['VIEW_CHANNEL'],
         }
       ]
@@ -355,10 +350,8 @@ module.exports = {
     }, 500); // Check every 0,5 seconds
   });
 
-  const WELCOME_CHANNEL_ID = '1290295707408011307';
-
   client.on('guildMemberAdd', async (member) => {
-    const channel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
+    const channel = member.guild.channels.cache.get(welcomeChannel);
     if (!channel || !channel.isText()) return; 
 
     const welcomeEmbed = new MessageEmbed()
@@ -381,176 +374,6 @@ module.exports = {
         console.error('Welkomsbericht versturen mislukt!:', error);
     }
   });
-  // Role and message details
-  const channelId = '1290295963461881948';
-const rolesEmbed1 = {
-    '1️⃣': '1290312388486234262', // Role for ICT Fase 1
-    '2️⃣': '1290312428986302607', // Role for ICT Fase 2
-    '3️⃣': '1290312455230328964'  // Role for ICT Fase 3
-};
-
-const rolesEmbed2 = {
-    '1️⃣': '1290312490357489725', // Role for Elektronica Fase 1
-    '2️⃣': '1290312518341755011', // Role for Elektronica Fase 2
-    '3️⃣': '1290312559345270886'  // Role for Elektronica Fase 3
-};
-
-// Define the third role with heavy_plus_sign emoji
-const rolesEmbed3 = {
-    '➕': '1293552694749036626' // Role for general or special category
-};
-
-// Store the IDs of the messages the bot sends
-let embedMessageId1;
-let embedMessageId2;
-let embedMessageId3;
-
-client.once('ready', async () => {
-    console.log(chalk.blue(` ====> Ingelogd als ${client.user.tag}`));
-
-    try {
-        const channel = await client.channels.fetch(channelId);
-
-        // Fetch the last 10 messages to find the embeds
-        const messages = await channel.messages.fetch({ limit: 10 });
-        const embedMessage1 = messages.find(msg => msg.embeds.length > 0 && msg.embeds[0].title.includes('Kies in welke afstudeerrichting en fase je zit (meerdere toegestaan)__') && msg.embeds[0].description.includes('ICT Fase'));
-        const embedMessage2 = messages.find(msg => msg.embeds.length > 0 && msg.embeds[0].title.includes('Kies in welke afstudeerrichting en fase je zit (meerdere toegestaan)__') && msg.embeds[0].description.includes('Elektronica Fase'));
-        const embedMessage3 = messages.find(msg => msg.embeds.length > 0 && msg.embeds[0].title.includes('Kies als je je keuzevak nergens kan vinden'));
-
-        if (embedMessage1) {
-            embedMessageId1 = embedMessage1.id;
-            console.log(
-              chalk.red('+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n') +
-              chalk.green(`Er bestaat al een interface voor ICT: ${embedMessageId1}`)
-            );
-          
-        } else {
-            // Create the first embed message
-            const embed1 = new MessageEmbed()
-                .setTitle(':exclamation: __Kies in welke afstudeerrichting en fase je zit (meerdere toegestaan)__')
-                .setDescription('1️⃣  ICT Fase 1\n2️⃣  ICT Fase 2\n3️⃣  ICT Fase 3')
-                .setColor('#00cb9c')
-                .setAuthor({ name: 'Selecteer de rollen die je wilt en kanalen zullen tevoorschijn komen', iconURL: 'https://i.imgur.com/JEI24aE.png' })
-                .setThumbnail('https://i.imgur.com/8aDn181.png');
-
-            // Send the first embed message
-            const message1 = await channel.send({ embeds: [embed1] });
-            embedMessageId1 = message1.id;
-        }
-
-        if (embedMessage2) {
-            embedMessageId2 = embedMessage2.id;
-            console.log(
-              chalk.green(`Er bestaat al een interface voor Elektronica: ${embedMessageId2}\n`) +
-              chalk.red('+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+') 
-            );
-
-        } else {
-            // Create the second embed message
-            const embed2 = new MessageEmbed()
-                .setTitle(':exclamation: __Kies in welke afstudeerrichting en fase je zit (meerdere toegestaan)__')
-                .setDescription('1️⃣  Elektronica Fase 1\n2️⃣  Elektronica Fase 2\n3️⃣  Elektronica Fase 3')
-                .setColor('#00cb9c')
-                .setAuthor({ name: 'Selecteer de rollen die je wilt en kanalen zullen tevoorschijn komen', iconURL: 'https://i.imgur.com/JEI24aE.png' })
-                .setThumbnail('https://i.imgur.com/lFQUvde.png');
-
-            // Send the second embed message
-            const message2 = await channel.send({ embeds: [embed2] });
-            embedMessageId2 = message2.id;
-        }
-
-        if (embedMessage3) {
-            embedMessageId3 = embedMessage3.id;
-            console.log(
-              chalk.green(`Er bestaat al een interface voor de algemene rol: ${embedMessageId3}\n`) +
-              chalk.red('+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+') 
-            );
-        } else {
-            // Create the third embed message for the general role
-            const embed3 = new MessageEmbed()
-                .setTitle(':exclamation: __Kies als je je keuzevak nergens kan vinden__')
-                .setDescription('➕  Alle keuzevakken die nog geen channel hebben.')
-                .setColor('#00cb9c')
-                .setAuthor({ name: 'Selecteer de rollen die je wilt en kanalen zullen tevoorschijn komen', iconURL: 'https://i.imgur.com/JEI24aE.png' })
-                .setThumbnail('https://i.imgur.com/1i5mch1.png');
-
-            // Send the third embed message
-            const message3 = await channel.send({ embeds: [embed3] });
-            embedMessageId3 = message3.id;
-        }
-
-        // React with the specified emojis on all messages
-        for (const emoji of Object.keys(rolesEmbed1)) {
-            if (embedMessageId1) await channel.messages.fetch(embedMessageId1).then(msg => msg.react(emoji));
-        }
-        for (const emoji of Object.keys(rolesEmbed2)) {
-            if (embedMessageId2) await channel.messages.fetch(embedMessageId2).then(msg => msg.react(emoji));
-        }
-        for (const emoji of Object.keys(rolesEmbed3)) {
-            if (embedMessageId3) await channel.messages.fetch(embedMessageId3).then(msg => msg.react(emoji));
-        }
-
-        console.log(chalk.green('✔ Interfaces voor rollen compleet.'));
-    } catch (error) {
-        console.error('Mislukt om interfaces of reacties te versturen', error);
-    }
-});
-
-client.on('messageReactionAdd', async (reaction, user) => {
-    if (!user.bot && reaction.message.channel.id === channelId) {
-        let roleId;
-
-        // Check if the reaction is for the first, second, or third embed
-        if (reaction.message.id === embedMessageId1) {
-            roleId = rolesEmbed1[reaction.emoji.name];
-        } else if (reaction.message.id === embedMessageId2) {
-            roleId = rolesEmbed2[reaction.emoji.name];
-        } else if (reaction.message.id === embedMessageId3) {
-            roleId = rolesEmbed3[reaction.emoji.name];
-        }
-
-        if (roleId) {
-            const guild = reaction.message.guild;
-            const member = guild.members.cache.get(user.id);
-            if (member) {
-                try {
-                    await member.roles.add(roleId);
-                    console.log(`Rol ${roleId} toegevoegd aan ${user.tag} door te reageren met ${reaction.emoji.name}`);
-                } catch (error) {
-                    console.error(`Rol toevoegen mislukt!: ${error}`);
-                }
-            }
-        }
-    }
-});
-
-client.on('messageReactionRemove', async (reaction, user) => {
-    if (!user.bot && reaction.message.channel.id === channelId) {
-        let roleId;
-
-        // Check if the reaction is for the first, second, or third embed
-        if (reaction.message.id === embedMessageId1) {
-            roleId = rolesEmbed1[reaction.emoji.name];
-        } else if (reaction.message.id === embedMessageId2) {
-            roleId = rolesEmbed2[reaction.emoji.name];
-        } else if (reaction.message.id === embedMessageId3) {
-            roleId = rolesEmbed3[reaction.emoji.name];
-        }
-
-        if (roleId) {
-            const guild = reaction.message.guild;
-            const member = guild.members.cache.get(user.id);
-            if (member) {
-                try {
-                    await member.roles.remove(roleId);
-                    console.log(`Rol ${roleId} verwijderd van ${user.tag} door ${reaction.emoji.name} af te vinken`);
-                } catch (error) {
-                    console.error(`Rol verwijderen mislukt!: ${error}`);
-                }
-            }
-        }
-    }
-});
 
 const activeCodes = new Map(); // Store verification codes with user IDs
 
@@ -569,7 +392,7 @@ const transporter = nodemailer.createTransport({
 });
 
 client.once('ready', async () => {
-  const channel = client.channels.cache.get('1293551793392980038');
+  const channel = client.channels.cache.get(verifyChannel);
   if (channel) await sendOrReuseVerificationMessage(channel);
 });
 
@@ -677,7 +500,7 @@ client.on('interactionCreate', async (interaction) => {
 
   if (customId === 'toggle_afgestudeerd') {
     const member = interaction.guild.members.cache.get(user.id);
-    const role = interaction.guild.roles.cache.get('1293568921454120980');
+    const role = interaction.guild.roles.cache.get(graduateRole);
 
     if (member && role) {
       if (member.roles.cache.has(role.id)) {
@@ -821,29 +644,329 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 });
-// Replace with your specific channel ID
-const channelIdstatus = '1290305355087347764';
 
-// This event triggers when a user's presence updates (e.g., they come online/offline)
-client.on('presenceUpdate', (oldPresence, newPresence) => {
-    // Check if the presence update is for a bot and the status changed to online
-    if (newPresence.user.bot && newPresence.status === 'online') {
-        const channel = client.channels.cache.get(channelIdstatus);
-        if (!channel) return console.error('Channel not found');
+const roleOptions = {
+  '1ste jaar': {
+    'Semester 1': [
+      { label: 'Elektronische Netwerken', value: 'Elektronische Netwerken' },
+      { label: 'Elektronische Realisatietechnieken', value: 'Elektronische Realisatietechnieken' },
+      { label: 'Programming Fundamentals', value: 'Programming Fundamentals' },
+      { label: 'Web Introduction', value: 'Web Introduction' },
+      { label: 'Infrastructure Fundamentals', value: 'Infrastructure Fundamentals' },
+      { label: 'Fundamental Skills for ICT', value: 'Fundamental Skills for ICT' },
+    ],
+    'Semester 2': [
+      { label: 'OO Programming', value: 'OO Programming' },
+      { label: 'Database Programming', value: 'Database Programming' },
+      { label: 'Hackathon', value: 'Hackathon' },
+      { label: 'Network Infrastructure 1', value: 'Network Infrastructure 1' },
+      { label: 'Server Infrastructure: Windows', value: 'Server Infrastructure: Windows' },
+      { label: 'Front-end Development', value: 'Front-end Development' },
+      { label: 'Digitale Technieken', value: 'Digitale Technieken' },
+      { label: 'Elektronische Componenten en Schakelingen', value: 'Elektronische Componenten en Schakelingen' },
+    ],
+  },
+  '2de jaar': {
+    'Semester 1': [
+      { label: 'Professionele Communicatie', value: 'Professionele Communicatie' },
+      { label: 'Ethiek', value: 'Ethiek' },
+      { label: 'Network Infrastructure 2', value: 'Network Infrastructure 2' },
+      { label: 'Server Infrastructure: Linux', value: 'Server Infrastructure: Linux' },
+      { label: 'Back-end Development', value: 'Back-end Development' },
+      { label: 'Full-stack: Introductory Project', value: 'Full-stack: Introductory Project' },
+      { label: 'Analoge Systemen', value: 'Analoge Systemen' },
+      { label: 'Filters', value: 'Filters' },
+      { label: 'IoT: Microcontrollers', value: 'IoT: Microcontrollers' },
+      { label: 'Algo & Data', value: 'Algo & Data' },
+      { label: '.NET Programming', value: '.NET Programming' }
+      
+    ],
+    'Semester 2': [
+      { label: 'Project & Wetenschappelijk Rapporteren', value: 'Project & Wetenschappelijk Rapporteren' },
+      { label: 'Data Security', value: 'Data Security' },
+      { label: 'Infrastructure as Code', value: 'Infrastructure as Code' },
+      { label: 'Full-stack Development', value: 'Full-stack Development' },
+      { label: 'Signaalverwerking', value: 'Signaalverwerking' },
+      { label: 'Telecommunicatie', value: 'Telecommunicatie' },
+      { label: '.NET Advanced Programming', value: '.NET Advanced Programming' },
+      { label: 'IoT: Datacommunicatie', value: 'IoT: Datacommunicatie' },
+      { label: 'Data Science', value: 'Data Science' },
+    ],
+  },
+  '3de jaar': {
+    'Semester 1': [
+      { label: 'Agile Team Project', value: 'Agile Team Project' },
+      { label: 'Security Infrastructure', value: 'Security Infrastructure' },
+      { label: 'Cloud Infrastructure', value: 'Cloud Infrastructure' },
+      { label: 'Mobile Application Development', value: 'Mobile Application Development' },
+      { label: 'Geavanceerd Printontwerp', value: 'Geavanceerd Printontwerp' },
+      { label: 'Industriële Toepassingen', value: 'Industriële Toepassingen' },
+      { label: 'Videotechniek', value: 'Videotechniek' },
+      { label: 'IoT: Embedded Linux', value: 'IoT: Embedded Linux' },
+      { label: 'Applied Programming', value: 'Applied Programming' },
+      { label: 'AI', value: 'AI' },
+    ],
+    'Semester 2': [
+      { label: 'Stage', value: 'Stage' },
+      { label: 'Bachelorproef', value: 'Bachelorproef' },
+    ],
+  },
+  'Keuzevakken': [
+    { label: 'Digitaal Systeemontwerp', value: 'Digitaal Systeemontwerp' },
+    { label: 'Web Programming on Servers and Devices', value: 'Web Programming on Servers and Devices' },
+    { label: 'Web Topics', value: 'Web Topics' },
+    { label: 'Web Topics Advanced', value: 'Web Topics Advanced' },
+    { label: 'Advanced Networking Technology', value: 'Advanced Networking Technology' },
+    { label: 'UX Design', value: 'UX Design' },
+    { label: 'Signaalverwerking voor ICT', value: 'Signaalverwerking voor ICT' },
+    { label: 'Hoogfrequenttechniek', value: 'Hoogfrequenttechniek' },
+    { label: '.NET Back-end Development', value: '.NET Back-end Development' },
+    { label: '.NET Front-end Development', value: '.NET Front-end Development' },
+    { label: 'Entrepreneurial Skills', value: 'Entrepreneurial Skills' },
+    { label: 'Persoonlijk Ontwikkelingsplan', value: 'Persoonlijk Ontwikkelingsplan' },
+    { label: 'Mobiliteit', value: 'Mobiliteit' },
+    { label: 'Unlimited Learning', value: 'Unlimited Learning' },
+    { label: 'Ondernemen', value: 'Ondernemen' },
+    { label: 'Wiskunde', value: 'Wiskunde' },
+    { label: 'Game Development', value: 'Game Development' },
+    { label: 'Medische informatica', value: 'Medische informatica' },
+    { label: 'Communication Professionnelle', value: 'Communication Professionnelle' },
+    { label: 'Professional Communication', value: 'Professional Communication' },
+    
+  ],
+  'Extra': [
+    { label: 'Gaming', value: 'Gaming' },
+    { label: 'Memes', value: 'Memes' },
+    { label: 'NFSW', value: 'NFSW' },
+  ],
+};
+client.once('ready', async () => {
+  const channel = client.channels.cache.get(roleChannel); // Replace with your channel ID
+  if (!channel) return console.error('Kanaal niet gevonden');
 
-        // Create an embed message
-        const embed = new EmbedBuilder()
-            .setTitle('Bot Online')
-            .setDescription(`${newPresence.user.username} is now online!`)
-            .setColor(0x00FF00) // Green color to indicate online status
-            .setTimestamp();
+  // Fetch the last 10 messages from the channel to check for an existing embed
+  const messages = await channel.messages.fetch({ limit: 10 });
+  const existingEmbedMessage = messages.find(msg => 
+    msg.author.id === client.user.id && 
+    msg.embeds[0]?.title === 'Vakrollen opnemen'
+  );
 
-        // Send the embed to the specified channel
-        channel.send({ embeds: [embed] })
-            .catch(console.error);
+  // If an existing embed is found, use it, otherwise send a new one
+  if (existingEmbedMessage) {
+    console.log(chalk.green('Er bestaat al een interface voor rollen, we hergebruiken deze.'));
+    client.categoryMessageId = existingEmbedMessage.id;
+  } else {
+    const embed = new MessageEmbed()
+      .setColor('00cb9c')
+      .setThumbnail('https://i.imgur.com/mwYSgFI.png')
+      .setTitle('Vakrollen opnemen')
+      .addFields(
+        {
+          name: 'Hoe neem ik vakken op?',
+          value:
+            '1. Je kan vakken opnemen door onder dit bericht het jaar te selecteren waarin je vakken wilt opnemen.\n2. Daarna zal de bot je vragen voor welk semester je vakken wilt opnemen.\n3. Je kan in het volgende menu meerdere vakken selecteren om op te nemen.',
+        },
+        {
+          name: 'Hoe kan ik vakken verwijderen?',
+          value:
+            'Je kan vakrollen verwijderen door simpelweg hetzelfde te doen als bij het opnemen van de vakken. Je zal opgenomen vakken herkennen aan de vinkjes en de niet-opgenomen vakken aan kruisjes.',
+        },
+        {
+          name: 'Problemen?',
+          value:
+            'Maak een ticket aan in <#1290295977403617341> en we helpen je zo snel mogelijk verder!',
+        }
+      );
+
+  const row = new MessageActionRow()
+    .addComponents(
+      new MessageSelectMenu()
+        .setCustomId('category')
+        .setPlaceholder('Selecteer je gewenste categorie')
+        .addOptions(Object.keys(roleOptions).map(category => ({
+          label: category,
+          value: category,
+        }))),
+    );
+
+  channel.send({ embeds: [embed], components: [row] })
+    .then(message => {
+      client.categoryMessageId = message.id; // Store the message ID for later editing
+    })
+    .catch(console.error);
+}});
+
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isSelectMenu()) return;
+
+  // Handle category selection
+  if (interaction.customId === 'category') {
+    const category = interaction.values[0];
+  
+    // Check if the category is "Keuzevakken" or "Extra"
+    if (category === 'Keuzevakken' || category === 'Extra') {
+      const roles = roleOptions[category];
+  
+      const embed = new MessageEmbed()
+        .setColor('00cb9c')
+        .setTitle(`Selecteer rollen in ${category}`)
+        .setDescription('Kies je keuzevakken die je wil opnemen, dit zijn alleen de vakken waar verder nergens een kanaal voor bestaat.');
+  
+      const roleOptionsWithCheckmarks = roles.map(role => {
+        const roleObj = interaction.guild.roles.cache.find(r => r.name === role.value);
+        const hasRole = roleObj && interaction.member.roles.cache.has(roleObj.id);
+        return {
+          label: hasRole ? `✅ ${role.label}` : `❌ ${role.label}`,
+          value: role.value,
+        };
+      });
+  
+      const row = new MessageActionRow()
+        .addComponents(
+          new MessageSelectMenu()
+            .setCustomId(`roles-${category}`) // Change the custom ID for roles to only include the category
+            .setPlaceholder('Selecteer gewenste rollen')
+            .addOptions(roleOptionsWithCheckmarks)
+            .setMinValues(0)
+            .setMaxValues(roleOptionsWithCheckmarks.length)
+        );
+  
+      // Edit the original category message to reset the dropdown placeholder
+      const originalMessage = await interaction.channel.messages.fetch(client.categoryMessageId);
+      if (originalMessage) {
+        const resetRow = new MessageActionRow()
+          .addComponents(
+            new MessageSelectMenu()
+              .setCustomId('category')
+              .setPlaceholder('Selecteer je categorie') // Reset the placeholder here
+              .addOptions(Object.keys(roleOptions).map(category => ({
+                label: category,
+                value: category,
+              }))),
+          );
+  
+        // Update the original message with the reset placeholder
+        await originalMessage.edit({ components: [resetRow] });
+      }
+  
+      // Send the roles selection as a reply
+      await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+    } else {
+      // Proceed with subcategory selection for other categories
+      const subcategories = Object.keys(roleOptions[category]);
+  
+      const embed = new MessageEmbed()
+        .setColor('00cb9c')
+        .setTitle(`Je hebt de categorie ${category} gekozen`)
+        .setDescription('Kies in welk semester je vakken wil opnemen.');
+  
+      const row = new MessageActionRow()
+        .addComponents(
+          new MessageSelectMenu()
+            .setCustomId(`subcategory-${category}`)
+            .setPlaceholder('Selecteer je semester')
+            .addOptions(subcategories.map(subcategory => ({
+              label: subcategory,
+              value: subcategory,
+            }))),
+        );
+  
+      // Edit the original category message to reset the dropdown placeholder
+      const originalMessage = await interaction.channel.messages.fetch(client.categoryMessageId);
+      if (originalMessage) {
+        const resetRow = new MessageActionRow()
+          .addComponents(
+            new MessageSelectMenu()
+              .setCustomId('category')
+              .setPlaceholder('Selecteer je gewenste categorie') // Reset the placeholder here
+              .addOptions(Object.keys(roleOptions).map(category => ({
+                label: category,
+                value: category,
+              }))),
+          );
+  
+        // Update the original message with the reset placeholder
+        await originalMessage.edit({ components: [resetRow] });
+      }
+  
+      // Send the subcategory selection as a reply
+      await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
     }
+  }
+
+  // Handle subcategory selection
+  else if (interaction.customId.startsWith('subcategory-')) {
+    const category = interaction.customId.split('-')[1];
+    const subcategory = interaction.values[0];
+
+    const roles = roleOptions[category][subcategory];
+    const member = interaction.guild.members.cache.get(interaction.user.id);
+
+    const embed = new MessageEmbed()
+      .setColor('00cb9c')
+      .setTitle(`Selecteer vakken in ${subcategory} van het ${category}`)
+      .setDescription('Kies de vakken die je wilt opnemen hieronder, je zal toegang krijgen tot deze kanalen.');
+
+    const roleOptionsWithCheckmarks = roles.map(role => {
+      const roleObj = interaction.guild.roles.cache.find(r => r.name === role.value);
+      const hasRole = roleObj && member.roles.cache.has(roleObj.id);
+      return {
+        label: hasRole ? `✅ ${role.label}` : `❌ ${role.label}`,
+        value: role.value,
+      };
+    });
+
+    const row = new MessageActionRow()
+      .addComponents(
+        new MessageSelectMenu()
+          .setCustomId(`roles-${category}-${subcategory}`) // Keep the same custom ID for subcategory selection
+          .setPlaceholder('Selecteer vakken')
+          .addOptions(roleOptionsWithCheckmarks)
+          .setMinValues(0)
+          .setMaxValues(roleOptionsWithCheckmarks.length)
+      );
+
+    await interaction.update({ embeds: [embed], components: [row] });
+  }
+
+  // Handle role selection
+  else if (interaction.customId.startsWith('roles-')) {
+    const [_, category, subcategory] = interaction.customId.split('-');
+    const selectedRoles = interaction.values;
+    const member = interaction.guild.members.cache.get(interaction.user.id);
+
+    const addedRoles = [];
+    const removedRoles = [];
+
+    // Update roles
+    for (const roleValue of selectedRoles) {
+      const role = interaction.guild.roles.cache.find(r => r.name === roleValue);
+      if (role) {
+        if (member.roles.cache.has(role.id)) {
+          await member.roles.remove(role);
+          removedRoles.push(roleValue);
+        } else {
+          await member.roles.add(role);
+          addedRoles.push(roleValue);
+        }
+      }
+    }
+
+    const overviewEmbed = new MessageEmbed()
+  .setColor('GREEN')
+  .setTitle('Hier is een overzicht van wat je hebt veranderd:')
+  .addField('✅ Toegevoegde Rollen', addedRoles.length > 0 ? addedRoles.join(', ') : 'Geen') // Inline removed or false
+  .addField('❌ Verwijderde Rollen', removedRoles.length > 0 ? removedRoles.join(', ') : 'Geen') // Inline removed or false
+
+// Update the interaction with the overview
+await interaction.update({ embeds: [overviewEmbed], components: [] });
+
+// After 5 seconds, delete the interaction reply
+setTimeout(async () => {
+  await interaction.deleteReply().catch(console.error);
+}, 5000);
+  }
 });
 
-
-  client.login(token);
+client.login(token);
   
